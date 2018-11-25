@@ -27,4 +27,4 @@ npm install gen-package --global
 
 ## License
 
-MI
+MIT
