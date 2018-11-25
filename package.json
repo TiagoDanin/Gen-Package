@@ -1,14 +1,12 @@
 {
   "name": "gen-package",
+  "main": "index.js",
   "version": "1.0.0",
   "description": "Intuitive and user-friendly generator of package.json",
   "author": {
     "name": "TiagoDanin",
     "email": "TiagoDanin@outlook.com",
     "url": "https://TiagoDanin.github.io"
-  },
-  "bin": {
-    "gen-package": "index.js"
   },
   "license": "MIT",
   "keywords": [
@@ -35,6 +33,9 @@
     "index.js",
     "package.json"
   ],
+  "bin": {
+    "gen-package": "index.js"
+  },
   "dependencies": {
     "choosealicense-list": "1.1.0",
     "enquirer": "2.0.7"

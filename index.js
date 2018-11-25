@@ -30,7 +30,7 @@ const main = async() => {
 
 	const files = fs.readdirSync(process.cwd())
 	const license = () => {
-		if (data.license) {
+		if (packageData.license) {
 			return {
 				type: 'input',
 				name: 'license',
@@ -110,8 +110,6 @@ const main = async() => {
 		message: 'GitHub Repository:',
 		initial: (typeof packageData.github == 'object' ? true : false) || (packageData.private && packageData.private == true ? false : true) || false
 	}])
-
-	console.log(response)
 
 	if (response.github) {
 		if (!packageData.github) {
