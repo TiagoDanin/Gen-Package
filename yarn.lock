@@ -10,8 +10,8 @@ choosealicense-list@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/choosealicense-list/-/choosealicense-list-1.1.0.tgz#ce147b3735319e19bc29860a2bd9c8b8d849bcd8"
 
-enquirer@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/enquirer/-/enquirer-2.1.1.tgz#14422b1204571cdbd1396a371767d8addaed1675"
+enquirer@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/enquirer/-/enquirer-2.2.0.tgz#beb4415e6293a6214de0fd405398e994da775d66"
   dependencies:
     ansi-colors "^3.2.1"
