@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "choosealicense-list": "1.1.0",
-    "enquirer": "2.2.0"
+    "enquirer": "2.3.0"
   }
 }
