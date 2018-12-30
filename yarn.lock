@@ -5,15 +5,17 @@
 ansi-colors@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-3.2.1.tgz#9638047e4213f3428a11944a7d4b31cba0a3ff95"
+  integrity sha512-Xt+zb6nqgvV9SWAVp0EG3lRsHcbq5DDgqjPPz6pwgtj6RKz65zGXMNa82oJfOSBA/to6GmRP7Dr+6o+kbApTzQ==
 
 choosealicense-list@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/choosealicense-list/-/choosealicense-list-1.1.0.tgz#ce147b3735319e19bc29860a2bd9c8b8d849bcd8"
+  integrity sha512-5wD4B9HgJaiFbNamxThD9xTg5LjczhxdX12+meqMdGgwfv9LCGnIgGDyBiAbndBTbu/eMBNVICXkXrpJZn/j4w==
 
-enquirer@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/enquirer/-/enquirer-2.0.7.tgz#6b35fae7a71ba8e6d226c906f51095762abd04d4"
-  integrity sha512-s/p+p8lA/GBc+PZkAGbWvrMO7l+3VTLTanFRtBACKhcMwD8auoEJ0jLfHMZNgSG56+eo3gLR6D/6F3rVpomLKA==
+enquirer@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/enquirer/-/enquirer-2.3.0.tgz#c362c9d84984ebe854def63caaf12983a16af552"
+  integrity sha512-RNGUbRVlfnjmpxV+Ed+7CGu0rg3MK7MmlW+DW0v7V2zdAUBC1s4BxCRiIAozbYB2UJ+q4D+8tW9UFb11kF72/g==
   dependencies:
     ansi-colors "^3.2.1"
 
