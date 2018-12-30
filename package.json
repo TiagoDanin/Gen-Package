@@ -1,7 +1,7 @@
 {
   "name": "gen-package",
   "main": "index.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Intuitive and user-friendly generator of package.json",
   "author": {
     "name": "TiagoDanin",
@@ -18,7 +18,10 @@
     "init",
     "intuitive"
   ],
-  "scripts": {},
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Nice Test :)\""
+  },
   "private": false,
   "repository": "https://github.com/TiagoDanin/Gen-Package.git",
   "homepage": "https://TiagoDanin.github.io/Gen-Package",
@@ -38,6 +41,7 @@
   },
   "dependencies": {
     "choosealicense-list": "1.1.0",
-    "enquirer": "2.0.7"
+    "enquirer": "2.0.7",
+    "lodash": "^4.17.11"
   }
 }
