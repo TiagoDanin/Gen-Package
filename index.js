@@ -1,14 +1,22 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const _ = require('lodash')
 const path = require('path')
-const licenses = require('choosealicense-list')
 const { prompt } = require('enquirer')
+const licenses = require('choosealicense-list')
 
 const main = async() => {
 	const packageFile = path.resolve(`${process.cwd()}/package.json`)
+	const packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.gen-package.json')
 	var packageData = {}
 	if (fs.existsSync(packageFile)) {
 		packageData = JSON.parse(fs.readFileSync(packageFile).toString())
+	}
+	if (fs.existsSync(packageGlobalFile)) {
+		packageData = _.merge(
+			JSON.parse(fs.readFileSync(packageGlobalFile).toString()),
+			packageData
+		)
 	}
 
 	var data = {
