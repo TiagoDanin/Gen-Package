@@ -2,38 +2,91 @@
 const fs = require('fs')
 const _ = require('lodash')
 const path = require('path')
+const got = require('got')
+const gh = require('github-url-to-object')
+const isOnline = require('is-online')
 const { prompt } = require('enquirer')
 const licenses = require('choosealicense-list')
 
-const main = async() => {
+const githubData = async (url) => {
+	if (!await isOnline()) {
+		return false
+	}
+
+	const headers = {
+		'Accept': 'application/vnd.github.mercy-preview+json',
+		'User-Agent': 'awesome-lint'
+	};
+	if (process.env.github_token) {
+		headers.Authorization = `token ${process.env.github_token}`;
+	}
+
+	const res = await got.get(url, {
+		headers,
+		json: true
+	}).catch(() => {
+		return {
+			body: false
+		}
+	});
+
+	return res.body
+}
+
+const main = async () => {
 	const packageFile = path.resolve(`${process.cwd()}/package.json`)
 	const packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.gen-package.json')
-	var packageData = {}
+	let packageData = {}
 	if (fs.existsSync(packageFile)) {
 		packageData = JSON.parse(fs.readFileSync(packageFile).toString())
 	}
 	if (fs.existsSync(packageGlobalFile)) {
+		const globalData = JSON.parse(fs.readFileSync(packageGlobalFile).toString())
 		packageData = _.merge(
-			JSON.parse(fs.readFileSync(packageGlobalFile).toString()),
+			globalData,
 			packageData
 		)
+		packageData.keywords = _.union(packageData.keywords, globalData.keywords)
 	}
 
-	var data = {
+	if (packageData.github) {
+		const github = gh(`${packageData.github.owner}/${packageData.github.name}`)
+		if (github) {
+			const githubDataJson = await githubData(github.api_url)
+			if (githubDataJson) {
+				packageData = _.merge({
+					description: githubDataJson.description,
+					repository: {
+						url: githubDataJson.clone_url
+					}
+				}, packageData)
+				packageData.keywords = _.union(packageData.keywords, githubDataJson.topics)
+			}
+		}
+	}
+
+	let data = {
 		name: '',
-		main: false,
+		main: 'index.js',
+		bin: {},
+		preferGlobal: false,
 		version: '1.0.0',
 		description: '',
 		author: '',
 		license: false,
 		keywords: [],
 		scripts: {},
+		engines: {},
 		private: false,
-		repository: false,
+		repository: {},
 		homepage: false,
-		bugs: false,
+		bugs: {
+			url: false
+		},
 		github: false,
-		files: []
+		files: [],
+		dependencies: {},
+		devDependencies: {}
 	}
 
 	const files = fs.readdirSync(process.cwd())
@@ -59,11 +112,34 @@ const main = async() => {
 		}
 	}
 
-	if (packageData && !packageData.author) {
+	if (!packageData.author) {
 		packageData.author = {}
 	}
+	if (!packageData.repository) {
+		packageData.repository = {
+			type: 'git'
+		}
+	}
+	if (!packageData.bugs) {
+		packageData.bugs = {}
+	}
+	if (!packageData.engines) {
+		packageData.engines = {}
+	}
+	if (!packageData.bin) {
+		packageData.bin = {}
+	}
+	if (!packageData.dependencies) {
+		packageData.dependencies = {}
+	}
+	if (!packageData.devDependencies) {
+		packageData.devDependencies = {}
+	}
+	if (!packageData.preferGlobal) {
+		packageData.preferGlobal = false
+	}
 
-	var response = await prompt([{
+	let response = await prompt([{
 		type: 'input',
 		name: 'name',
 		message: 'Name',
@@ -139,9 +215,9 @@ const main = async() => {
 		})
 		response.github = response.github.github
 
-		data.repository = data.repository || `https://github.com/${response.github.owner}/${response.github.name}.git`
-		data.homepage = data.homepage || `https://${response.github.owner}.github.io/${response.github.name}`
-		data.bugs = data.bugs || `https://github.com/${response.github.owner}/${response.github.name}/issues`
+		data.repository.url = `git+https://github.com/${response.github.owner}/${response.github.name}.git`
+		data.homepage = `https://${response.github.owner}.github.io/${response.github.name}`
+		data.bugs.url = `https://github.com/${response.github.owner}/${response.github.name}/issues`
 	}
 
 	const more = async () => {
@@ -149,7 +225,7 @@ const main = async() => {
 			type: 'input',
 			name: 'repository',
 			message: 'Repository GIT:',
-			initial: packageData.repository || data.repository
+			initial: (typeof packageData.repository == 'string' ? `git+${packageData.repository}` : false) || packageData.repository.url || data.repository.url
 		}, {
 			type: 'input',
 			name: 'homepage',
@@ -159,7 +235,7 @@ const main = async() => {
 			type: 'input',
 			name: 'bugs',
 			message: 'Bugs/Issues/Suport URL:',
-			initial: packageData.bugs || data.bugs
+			initial: (typeof packageData.bugs == 'string' ? packageData.bugs : false) || packageData.bugs.url || data.bugs.url
 		}, {
 			type: 'multiselect',
 			name: 'files',
@@ -187,19 +263,98 @@ const main = async() => {
 		}])
 	}
 
+	const moreData = await more()
+	moreData.repository = {
+		type: 'git',
+		url: moreData.repository
+	}
+	moreData.bugs = {
+		url: moreData.bugs
+	}
+
+	const isNode = await prompt({
+		type: 'confirm',
+		name: 'ok',
+		message: 'NodeJS Package?',
+		initial: packageData.engines.node || false
+	})
+	if (isNode.ok) {
+		const engines = await prompt({
+			type: 'input',
+			name: 'node',
+			message: 'Version:',
+			initial: packageData.engines.node || process.version.replace('v', '>=') || '>=8'
+		})
+		moreData.engines = engines
+	}
+
+	const isCli = await prompt({
+		type: 'confirm',
+		name: 'ok',
+		message: 'CLI Package?',
+		initial: JSON.stringify(packageData.bin) != '{}' || false
+	})
+	if (isCli.ok) {
+		let fistCli = Object.keys(packageData.bin)
+		if (fistCli.length > 0) {
+			fistCli = {
+				name: fistCli[0],
+				point: packageData.bin[fistCli[0]]
+			}
+		} else {
+			fistCli = {
+				name: packageData.name || data.name,
+				point: packageData.main || data.main
+			}
+		}
+		let cli = await prompt({
+			type: 'form',
+			name: 'data',
+			message: 'CLI:',
+			choices: [{
+				name: 'name',
+				message: 'Name:',
+				initial: fistCli.name
+			}, {
+				name: 'point',
+				message: 'Entry point:',
+				initial: fistCli.point
+			}]
+		})
+		moreData.bin = {}
+		cli = {
+			[cli.data.name]: cli.data.point
+		}
+
+		moreData.bin = _.merge(
+			moreData.bin,
+			cli
+		)
+	}
+
+	const isGlobal = await prompt({
+		type: 'confirm',
+		name: 'ok',
+		message: 'Global Package?',
+		initial: packageData.preferGlobal
+	})
+	if (isGlobal.ok) {
+		moreData.preferGlobal = true
+	}
+
 	const packageJson = JSON.stringify({
 		...data,
 		...packageData,
 		...response,
-		...await more()
-	}, null, '  ')
+		...moreData
+	}, null, '\t')
 	console.log(packageJson)
-	const is = await prompt({
+	const is = await prompt([{
 		type: 'confirm',
 		name: 'ok',
 		message: 'Is this OK?',
 		initial: true
-	})
+	}])
 	if (is.ok) {
 		fs.writeFileSync(packageFile, packageJson)
 	}

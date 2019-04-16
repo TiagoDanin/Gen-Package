@@ -1,47 +1,58 @@
 {
-  "name": "gen-package",
-  "main": "index.js",
-  "version": "1.1.2",
-  "description": "Intuitive and user-friendly generator of package.json",
-  "author": {
-    "name": "TiagoDanin",
-    "email": "TiagoDanin@outlook.com",
-    "url": "https://TiagoDanin.github.io"
-  },
-  "license": "MIT",
-  "keywords": [
-    "generate",
-    "generator",
-    "cli",
-    "package",
-    "npm",
-    "init",
-    "intuitive"
-  ],
-  "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Nice Test :)\""
-  },
-  "private": false,
-  "repository": "https://github.com/TiagoDanin/Gen-Package.git",
-  "homepage": "https://TiagoDanin.github.io/Gen-Package",
-  "bugs": "https://github.com/TiagoDanin/Gen-Package/issues",
-  "github": {
-    "name": "Gen-Package",
-    "owner": "TiagoDanin"
-  },
-  "files": [
-    "LICENSE",
-    "README.md",
-    "index.js",
-    "package.json"
-  ],
-  "bin": {
-    "gen-package": "index.js"
-  },
-  "dependencies": {
-    "choosealicense-list": "1.1.1",
-    "enquirer": "2.3.0",
-    "lodash": "4.17.11"
-  }
+	"name": "gen-package",
+	"main": "index.js",
+	"bin": {
+		"gen-package": "index.js"
+	},
+	"preferGlobal": true,
+	"version": "1.1.2",
+	"description": "Intuitive and user-friendly generator of package.json",
+	"author": {
+		"name": "TiagoDanin",
+		"email": "TiagoDanin@outlook.com",
+		"url": "https://TiagoDanin.github.io"
+	},
+	"license": "MIT",
+	"keywords": [
+		"generate",
+		"cli",
+		"generator",
+		"package",
+		"package-json"
+	],
+	"scripts": {
+		"start": "node index.js",
+		"test": "echo \"Nice Test :)\""
+	},
+	"engines": {
+		"node": ">=8"
+	},
+	"private": false,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/TiagoDanin/Gen-Package.git"
+	},
+	"homepage": "https://TiagoDanin.github.io/Gen-Package",
+	"bugs": {
+		"url": "https://github.com/TiagoDanin/Gen-Package/issues"
+	},
+	"github": {
+		"name": "Gen-Package",
+		"owner": "TiagoDanin"
+	},
+	"files": [
+		"LICENSE",
+		"README.md",
+		"index.js",
+		"package.json"
+	],
+	"dependencies": {
+		"choosealicense-list": "1.1.1",
+		"enquirer": "2.3.0",
+		"github-url-to-object": "4.0.4",
+		"got": "9.6.0",
+		"is-online": "8.2.0",
+		"lodash": "4.17.11"
+	},
+	"devDependencies": {}
 }
