@@ -5,7 +5,7 @@
 		"gen-package": "index.js"
 	},
 	"preferGlobal": true,
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"description": "Intuitive and user-friendly generator of package.json",
 	"author": {
 		"name": "TiagoDanin",
