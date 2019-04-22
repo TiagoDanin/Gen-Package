@@ -219,19 +219,33 @@ const main = async () => {
 		packageData = toFalseValues(packageData)
 	}
 
-	if (packageData.github) {
-		const github = gh(`${packageData.github.owner}/${packageData.github.name}`)
-		if (github) {
-			const githubDataJson = await githubData(github.api_url)
-			if (githubDataJson) {
-				packageData = _.merge({
-					description: githubDataJson.description,
-					repository: {
-						url: githubDataJson.clone_url
-					}
-				}, packageData)
-				packageData.keywords = _.union(packageData.keywords, githubDataJson.topics)
-				packageData = toFalseValues(packageData)
+	if (!argv.offline) {
+		let github = false
+		if (argv.github) {
+			github = gh(argv.github)
+			if (github) {
+				packageData.github = {
+					owner: github.user,
+					name: github.repo
+				}
+			}
+		}
+		if (packageData.github) {
+			if (!github) {
+				github = gh(`${packageData.github.owner}/${packageData.github.name}`)
+			}
+			if (github) {
+				const githubDataJson = await githubData(github.api_url)
+				if (githubDataJson) {
+					packageData = _.merge({
+						description: githubDataJson.description,
+						repository: {
+							url: githubDataJson.clone_url
+						}
+					}, packageData)
+					packageData.keywords = _.union(packageData.keywords, githubDataJson.topics)
+					packageData = toFalseValues(packageData)
+				}
 			}
 		}
 	}
