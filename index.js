@@ -7,6 +7,8 @@ const gh = require('github-url-to-object')
 const isOnline = require('is-online')
 const { prompt } = require('enquirer')
 const licenses = require('choosealicense-list')
+const argv = require('minimist')(process.argv)
+
 
 const githubData = async (url) => {
 	if (!await isOnline()) {
@@ -33,12 +35,117 @@ const githubData = async (url) => {
 	return res.body
 }
 
+const toFalse = (input) => {
+	const stringEmpty = [
+		'git+https://github.com//.git',
+		'https://.github.io/',
+		'https://github.com///issues',
+		' '
+	]
+	if (typeof input == 'number' && input <= 0) {
+		return false
+	} else if (typeof input == 'string') {
+		if (input.length <= 0 || stringEmpty.includes(input)) {
+			return false
+		}
+	} else if (!input) {
+		return false
+	}
+	return input
+}
+
+const toFalseValues = (values) => {
+	const list = [
+		'',
+		'name',
+		'email',
+		'url',
+		'type',
+		'main',
+		'preferGlobal',
+		'description',
+		'license',
+		'homepage',
+		'bin',
+		'author',
+		'scripts',
+		'start',
+		'test',
+		'engines',
+		'repository',
+		'bugs',
+		'github'
+	]
+	list.forEach((key) => {
+		if (typeof values[key] == 'object') {
+			if (Array.isArray(values[key])) {
+				values[key] = values[key].map((el) => {
+					return toFalse(el)
+				})
+			} else {
+				values[key] = toFalseValues(values[key])
+			}
+		} else if (typeof values[key] != 'undefined') {
+			values[key] = toFalse(values[key])
+		}
+	})
+	return values
+}
+
+const clean = (packageData) => {
+	packageData = toFalseValues(packageData)
+	if (!packageData.repository.url) {
+		delete packageData.repository
+	}
+
+	const removeList = [
+		'bin',
+		'author',
+		'engines',
+		'bugs',
+		'github'
+	]
+	const keys = Object.keys(packageData).map((key) => {
+		if (!packageData[key]) {
+			delete packageData[key]
+		} else if (typeof packageData[key] == 'object') {
+			if (Array.isArray(packageData[key])) {
+				packageData[key] = packageData[key].filter(e => e)
+				if (packageData[key].length <= 0) {
+					delete packageData[key]
+				}
+			} else {
+				Object.keys(packageData[key]).map((k) => {
+					if (!packageData[key][k]) {
+						delete packageData[key][k]
+					}
+				})
+			}
+		}
+		if (removeList.includes(key)) {
+			if (Object.keys(packageData[key]).length <= 0) {
+				delete packageData[key]
+			}
+		}
+	})
+
+	let indent = '\t'
+	if (argv.indent) {
+		indent = argv.indent
+	} else if (argv.space) {
+		indent = '\s\s'
+	}
+	packageData = JSON.stringify(packageData, null, indent)
+	return packageData
+}
+
 const main = async () => {
 	const packageFile = path.resolve(`${process.cwd()}/package.json`)
-	const packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.gen-package.json')
+	const packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.dgen-package.json')
 	let packageData = {}
 	if (fs.existsSync(packageFile)) {
 		packageData = JSON.parse(fs.readFileSync(packageFile).toString())
+		packageData = toFalseValues(packageData)
 	}
 	if (fs.existsSync(packageGlobalFile)) {
 		const globalData = JSON.parse(fs.readFileSync(packageGlobalFile).toString())
@@ -47,6 +154,7 @@ const main = async () => {
 			packageData
 		)
 		packageData.keywords = _.union(packageData.keywords, globalData.keywords)
+		packageData = toFalseValues(packageData)
 	}
 
 	if (packageData.github) {
@@ -61,6 +169,7 @@ const main = async () => {
 					}
 				}, packageData)
 				packageData.keywords = _.union(packageData.keywords, githubDataJson.topics)
+				packageData = toFalseValues(packageData)
 			}
 		}
 	}
@@ -194,6 +303,7 @@ const main = async () => {
 		message: 'GitHub Repository:',
 		initial: (typeof packageData.github == 'object' ? true : false) || (packageData.private && packageData.private == true ? false : true) || false
 	}])
+	response = toFalseValues(response)
 
 	if (response.github) {
 		if (!packageData.github) {
@@ -220,7 +330,7 @@ const main = async () => {
 		data.bugs.url = `https://github.com/${response.github.owner}/${response.github.name}/issues`
 	}
 
-	const more = async () => {
+	let more = async () => {
 		return await prompt([{
 			type: 'input',
 			name: 'repository',
@@ -262,8 +372,9 @@ const main = async () => {
 			]
 		}])
 	}
+	more = toFalseValues(more)
 
-	const moreData = await more()
+	let moreData = await more()
 	moreData.repository = {
 		type: 'git',
 		url: moreData.repository
@@ -271,6 +382,7 @@ const main = async () => {
 	moreData.bugs = {
 		url: moreData.bugs
 	}
+	moreData = toFalseValues(moreData)
 
 	const isNode = await prompt({
 		type: 'confirm',
@@ -287,6 +399,7 @@ const main = async () => {
 		})
 		moreData.engines = engines
 	}
+	moreData = toFalseValues(moreData)
 
 	const isCli = await prompt({
 		type: 'confirm',
@@ -331,6 +444,7 @@ const main = async () => {
 			cli
 		)
 	}
+	moreData = toFalseValues(moreData)
 
 	const isGlobal = await prompt({
 		type: 'confirm',
@@ -341,13 +455,14 @@ const main = async () => {
 	if (isGlobal.ok) {
 		moreData.preferGlobal = true
 	}
+	moreData = toFalseValues(moreData)
 
-	const packageJson = JSON.stringify({
+	const packageJson = clean({
 		...data,
 		...packageData,
 		...response,
 		...moreData
-	}, null, '\t')
+	})
 	console.log(packageJson)
 	const is = await prompt([{
 		type: 'confirm',
