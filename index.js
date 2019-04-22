@@ -92,6 +92,61 @@ const toFalseValues = (values) => {
 	return values
 }
 
+const sortable = (input) => {
+	if (Array.isArray(input)) {
+		return input.sort()
+	} else if (typeof input == 'object') {
+		const output = {}
+		Object.keys(input).sort().map((key) => {
+			output[key] = input[key]
+		})
+		return output
+	}
+	return input
+}
+
+const sortPackage = (packageData) => {
+	const list = [
+		'bin',
+		'keywords',
+		'scripts',
+		'engines',
+		'files',
+		'dependencies',
+		'devDependencies',
+		'peerDependencies'
+	]
+
+	const top = [
+		'start',
+		'dev',
+		'test',
+		'lint'
+	]
+	top.reverse()
+
+	list.map((key) => {
+		if (packageData[key]) {
+			packageData[key] = sortable(packageData[key])
+		}
+	})
+	if (packageData.scripts) {
+		const scripts = Object.keys(packageData.scripts)
+		list.map((script) => {
+			if (scripts.includes(script)) {
+				const obj = {
+					[script]: packageData.scripts[script]
+				}
+				packageData.scripts = {
+					...obj,
+					...packageData.scripts
+				}
+			}
+		})
+	}
+	return packageData
+}
+
 const clean = (packageData) => {
 	packageData = toFalseValues(packageData)
 	if (!packageData.repository.url) {
@@ -135,6 +190,8 @@ const clean = (packageData) => {
 	} else if (argv.space) {
 		indent = '\s\s'
 	}
+
+	packageData = sortPackage(packageData)
 	packageData = JSON.stringify(packageData, null, indent)
 	return packageData
 }
@@ -173,6 +230,7 @@ const main = async () => {
 			}
 		}
 	}
+	packageData = sortPackage(packageData)
 
 	let data = {
 		name: '',

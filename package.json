@@ -14,8 +14,8 @@
 	},
 	"license": "MIT",
 	"keywords": [
-		"generate",
 		"cli",
+		"generate",
 		"generator",
 		"package",
 		"package-json"
@@ -27,7 +27,6 @@
 	"engines": {
 		"node": ">=8"
 	},
-	"private": false,
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/TiagoDanin/Gen-Package.git"
