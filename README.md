@@ -23,9 +23,23 @@ yarn global add gen-package
 
 ## Usage
 ```sh
+# Create package.json
 gen-package
 
+# Create package.json with indent (space)
+gen-package --space
+
+# Create package with indent (custom)
+gen-package --indent='\t\t'
+
+# Create package.json in offline mode
+gen-package --offline
+
+# Create package.json with GitHub mode, replace 'TiagoDanin/Gen-Package' your repository
+gen-package --github=TiagoDanin/Gen-Package
+
 ```
+
 
 
 ## Dependencies
@@ -35,6 +49,7 @@ gen-package
 - [got](https://ghub.io/got): Simplified HTTP requests
 - [is-online](https://ghub.io/is-online): Check if the internet connection is up
 - [lodash](https://ghub.io/lodash): Lodash modular utilities.
+- [minimist](https://ghub.io/minimist): parse argument options
 
 
 
