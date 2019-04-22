@@ -98,7 +98,20 @@ npm install gen-package --global
 <span class="hljs-comment"># Or Using Yarn</span>
 yarn global add gen-package</code></pre>
 <h2 id="usage"><a href="#usage">Usage</a></h2>
-<pre><code class="hljs language-sh">gen-package</code></pre>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Create package.json</span>
+gen-package
+
+<span class="hljs-comment"># Create package.json with indent (space)</span>
+gen-package --space
+
+<span class="hljs-comment"># Create package with indent (custom)</span>
+gen-package --indent=<span class="hljs-string">'\t\t'</span>
+
+<span class="hljs-comment"># Create package.json in offline mode</span>
+gen-package --offline
+
+<span class="hljs-comment"># Create package.json with GitHub mode, replace 'TiagoDanin/Gen-Package' your repository</span>
+gen-package --github=TiagoDanin/Gen-Package</code></pre>
 <h2 id="dependencies"><a href="#dependencies">Dependencies</a></h2>
 <ul>
 <li><a href="https://ghub.io/choosealicense-list">choosealicense-list</a>: List of licenses from choosealicense.com</li>
@@ -107,6 +120,7 @@ yarn global add gen-package</code></pre>
 <li><a href="https://ghub.io/got">got</a>: Simplified HTTP requests</li>
 <li><a href="https://ghub.io/is-online">is-online</a>: Check if the internet connection is up</li>
 <li><a href="https://ghub.io/lodash">lodash</a>: Lodash modular utilities.</li>
+<li><a href="https://ghub.io/minimist">minimist</a>: parse argument options</li>
 </ul>
 <h2 id="contributors"><a href="#contributors">Contributors</a></h2>
 <p>Pull requests and stars are always welcome. For bugs and feature requests, please <a href="https://github.com/TiagoDanin/Gen-Package/issues">create an issue</a>. <a href="https://github.com/TiagoDanin/Gen-Package/graphs/contributors">List of all contributors</a>.</p>
