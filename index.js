@@ -197,8 +197,13 @@ const clean = (packageData) => {
 }
 
 const main = async () => {
-	const packageFile = path.resolve(`${process.cwd()}/package.json`)
-	const packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.dgen-package.json')
+	let packageFile = path.resolve(`${process.cwd()}/package.json`)
+	let packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.gen-package.json')
+	if (argv.dev) {
+		packageFile = path.resolve(`${process.cwd()}/dev/package.json`)
+		packageGlobalFile = path.resolve(`${process.cwd()}/dev/global.json`)
+	}
+
 	let packageData = {}
 	if (fs.existsSync(packageFile)) {
 		packageData = JSON.parse(fs.readFileSync(packageFile).toString())
@@ -354,7 +359,7 @@ const main = async () => {
 		type: 'confirm',
 		name: 'private',
 		message: 'Private:',
-		initial: packageData.private || data.private
+		initial: Boolean(packageData.private) || Boolean(data.private)
 	}, {
 		type: 'confirm',
 		name: 'github',
@@ -446,7 +451,7 @@ const main = async () => {
 		type: 'confirm',
 		name: 'ok',
 		message: 'NodeJS Package?',
-		initial: packageData.engines.node || false
+		initial: Boolean(packageData.engines.node) || false
 	})
 	if (isNode.ok) {
 		const engines = await prompt({
@@ -508,7 +513,7 @@ const main = async () => {
 		type: 'confirm',
 		name: 'ok',
 		message: 'Global Package?',
-		initial: packageData.preferGlobal
+		initial: Boolean(packageData.preferGlobal)
 	})
 	if (isGlobal.ok) {
 		moreData.preferGlobal = true
