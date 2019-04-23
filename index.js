@@ -9,6 +9,31 @@ const { prompt } = require('enquirer')
 const licenses = require('choosealicense-list')
 const argv = require('minimist')(process.argv)
 
+let data = {
+	name: '',
+	main: 'index.js',
+	bin: {},
+	preferGlobal: false,
+	version: '1.0.0',
+	description: '',
+	author: '',
+	license: false,
+	keywords: [],
+	scripts: {},
+	engines: {},
+	private: false,
+	repository: {},
+	homepage: false,
+	bugs: {
+		url: false
+	},
+	github: false,
+	files: [],
+	dependencies: {},
+	devDependencies: {},
+	peerDependencies: {},
+	optionalDependencies: {}
+}
 
 const githubData = async (url) => {
 	if (!await isOnline()) {
@@ -114,7 +139,8 @@ const sortPackage = (packageData) => {
 		'files',
 		'dependencies',
 		'devDependencies',
-		'peerDependencies'
+		'peerDependencies',
+		'optionalDependencies'
 	]
 
 	const top = [
@@ -158,9 +184,20 @@ const clean = (packageData) => {
 		'author',
 		'engines',
 		'bugs',
-		'github'
+		'github',
+		'peerDependencies',
+		'optionalDependencies'
 	]
-	const keys = Object.keys(packageData).map((key) => {
+
+	const ignoreList = [
+		'preferGlobal',
+		'private'
+	]
+
+	const keysData = Object.keys(data).filter(key => !ignoreList.includes(key))
+	const keys = Object.keys(packageData).filter(key => keysData.includes(key))
+
+	keys.map((key) => {
 		if (!packageData[key]) {
 			delete packageData[key]
 		} else if (typeof packageData[key] == 'object') {
@@ -250,30 +287,6 @@ const main = async () => {
 		}
 	}
 	packageData = sortPackage(packageData)
-
-	let data = {
-		name: '',
-		main: 'index.js',
-		bin: {},
-		preferGlobal: false,
-		version: '1.0.0',
-		description: '',
-		author: '',
-		license: false,
-		keywords: [],
-		scripts: {},
-		engines: {},
-		private: false,
-		repository: {},
-		homepage: false,
-		bugs: {
-			url: false
-		},
-		github: false,
-		files: [],
-		dependencies: {},
-		devDependencies: {}
-	}
 
 	const files = fs.readdirSync(process.cwd())
 	const license = () => {
@@ -435,7 +448,10 @@ const main = async () => {
 				'LICENSE.md',
 				'LICENSE',
 				'license',
-				response.main || 'index.js'
+				'index.js',
+				'dist',
+				'lib',
+				response.main
 			]).reduce((total, current, index) => {
 				if (files.includes(current)) {
 					total.push(current)
