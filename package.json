@@ -8,8 +8,8 @@
 	"version": "1.3.0",
 	"description": "Intuitive and user-friendly generator of package.json",
 	"author": {
-		"name": "TiagoDanin",
 		"email": "TiagoDanin@outlook.com",
+		"name": "TiagoDanin",
 		"url": "https://TiagoDanin.github.io"
 	},
 	"license": "MIT",
@@ -56,9 +56,16 @@
 		"minimist": "1.2.0"
 	},
 	"devDependencies": {
-		"xo": "^0.24.0"
+		"xo": "0.24.0"
 	},
 	"xo": {
+		"rules": {
+			"quote-props": "warn",
+			"eqeqeq": "warn",
+			"array-callback-return": "warn",
+			"require-atomic-updates": "warn",
+			"no-else-return": "off"
+		},
 		"semicolon": false
 	}
 }

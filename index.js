@@ -1,42 +1,66 @@
 #!/usr/bin/env node
 const fs = require('fs')
 const path = require('path')
-const _ = require('lodash')
+const {merge, union, cloneDeep} = require('lodash')
 const got = require('got')
 const gh = require('github-url-to-object')
 const isOnline = require('is-online')
-const { prompt } = require('enquirer')
+const {prompt} = require('enquirer')
 const licenses = require('choosealicense-list')
 const argv = require('minimist')(process.argv)
 
-let data = {
+let packageData = {}
+let packageFile = 'package.json'
+const data = {
 	name: '',
 	main: 'index.js',
 	bin: {},
 	preferGlobal: false,
 	version: '1.0.0',
 	description: '',
-	author: '',
-	license: false,
+	author: {
+		name: '',
+		email: '',
+		url: ''
+	},
+	license: '',
 	keywords: [],
 	scripts: {},
 	engines: {},
 	private: false,
-	repository: {},
-	homepage: false,
-	bugs: {
-		url: false
+	repository: {
+		type: 'git',
+		url: ''
 	},
-	github: false,
+	homepage: '',
+	bugs: {
+		url: ''
+	},
+	github: {
+		name: '',
+		owner: ''
+	},
 	files: [],
 	dependencies: {},
 	devDependencies: {},
 	peerDependencies: {},
-	optionalDependencies: {},
-	xo: {}
+	optionalDependencies: {}
 }
 
-const githubData = async (url) => {
+const dataKeys = Object.keys(data)
+const arrayKeys = Object.keys(data).filter(key => Array.isArray(data[key]))
+const objectKeys = Object.keys(data).filter(key => typeof data[key] === 'object' && !Array.isArray(data[key]))
+const booleanKeys = Object.keys(data).filter(key => typeof data[key] === 'boolean')
+
+const allSubKeys = []
+objectKeys.map(key => {
+	return Object.keys(data[key]).map(k => allSubKeys.push(k))
+})
+arrayKeys.map(key => allSubKeys.push(key))
+
+const allDataKeys = [...dataKeys, ...allSubKeys]
+
+const githubData = async url => {
 	if (!await isOnline()) {
 		return false
 	}
@@ -44,9 +68,10 @@ const githubData = async (url) => {
 	const headers = {
 		'Accept': 'application/vnd.github.mercy-preview+json',
 		'User-Agent': 'awesome-lint'
-	};
+	}
+
 	if (process.env.github_token) {
-		headers.Authorization = `token ${process.env.github_token}`;
+		headers.Authorization = `token ${process.env.github_token}`
 	}
 
 	const res = await got.get(url, {
@@ -56,95 +81,101 @@ const githubData = async (url) => {
 		return {
 			body: false
 		}
-	});
+	})
 
 	return res.body
 }
 
-const toFalse = (input) => {
+const toFalse = (input, hard) => {
 	const stringEmpty = [
 		'git+https://github.com//.git',
 		'https://.github.io/',
 		'https://github.com///issues',
-		' '
+		' ',
+		''
 	]
-	if (typeof input == 'number' && input < 0) {
-		return false
-	} else if (typeof input == 'string') {
+
+	if (typeof input === 'number' && input <= 0) {
+		return hard ? false : 0
+	} else if (typeof input === 'string') {
 		if (input.length <= 0 || stringEmpty.includes(input)) {
-			return false
+			return hard ? false : ''
 		}
 	} else if (!input) {
 		return false
 	}
+
 	return input
 }
 
-const toFalseValues = (values) => {
-	const list = [
+const toFalseValues = values => {
+	const keys = [
 		'',
-		'name',
-		'email',
-		'url',
-		'type',
-		'main',
-		'preferGlobal',
-		'description',
-		'license',
-		'homepage',
-		'bin',
-		'author',
-		'scripts',
-		'start',
-		'test',
-		'engines',
-		'repository',
-		'bugs',
-		'github'
+		...allDataKeys
 	]
-	list.forEach((key) => {
-		if (typeof values[key] == 'object') {
+
+	keys.map(key => {
+		if (typeof values[key] === 'object') {
 			if (Array.isArray(values[key])) {
-				values[key] = values[key].map((el) => {
-					return toFalse(el)
-				})
+				values[key] = values[key].map(el => toFalse(el)).filter(e => e)
 			} else {
 				values[key] = toFalseValues(values[key])
 			}
-		} else if (typeof values[key] != 'undefined') {
+		} else if (typeof values[key] !== 'undefined') {
 			values[key] = toFalse(values[key])
 		}
 	})
 	return values
 }
 
-const sortable = (input) => {
+const dataMerge = (a = {}, b = {}) => {
+	b = cloneDeep(b)
+	dataKeys.map(key => {
+		if (typeof b[key] === 'undefined') {
+			delete b[key]
+			return false
+		}
+
+		if (typeof b[key] !== typeof data[key]) {
+			b[key] = cloneDeep(data[key])
+		}
+
+		allSubKeys.map(subKey => {
+			if (typeof data[key][subKey] === 'undefined') {
+				return false
+			}
+
+			if (typeof b[key][subKey] !== typeof data[key][subKey]) {
+				b[key][subKey] = cloneDeep(data[key][subKey])
+			}
+		})
+	})
+
+	const output = merge(a, toFalseValues(b))
+	arrayKeys.map(key => {
+		if (output[key] && b[key]) {
+			output[key] = union(output[key], b[key]).filter(e => e)
+		}
+	})
+
+	return output
+}
+
+const sortable = input => {
 	if (Array.isArray(input)) {
 		return input.sort()
-	} else if (typeof input == 'object') {
+	} else if (typeof input === 'object') {
 		const output = {}
-		Object.keys(input).sort().map((key) => {
+		Object.keys(input).sort().map(key => {
 			output[key] = input[key]
 		})
 		return output
 	}
+
 	return input
 }
 
-const sortPackage = (packageData) => {
-	const list = [
-		'bin',
-		'keywords',
-		'scripts',
-		'engines',
-		'files',
-		'dependencies',
-		'devDependencies',
-		'peerDependencies',
-		'optionalDependencies',
-		'xo'
-	]
-
+const sortPackage = () => {
 	const top = [
 		'start',
 		'dev',
@@ -153,14 +184,21 @@ const sortPackage = (packageData) => {
 	]
 	top.reverse()
 
-	list.map((key) => {
+	const keys = [
+		...dataKeys,
+		'ava',
+		'xo'
+	]
+
+	keys.map(key => {
 		if (packageData[key]) {
 			packageData[key] = sortable(packageData[key])
 		}
 	})
+
 	if (packageData.scripts) {
 		const scripts = Object.keys(packageData.scripts)
-		list.map((script) => {
+		top.map(script => {
 			if (scripts.includes(script)) {
 				const obj = {
 					[script]: packageData.scripts[script]
@@ -172,39 +210,19 @@ const sortPackage = (packageData) => {
 			}
 		})
 	}
+
 	return packageData
 }
 
-const clean = (packageData) => {
+const clean = () => {
 	packageData = toFalseValues(packageData)
 	if (!packageData.repository.url) {
 		delete packageData.repository
 	}
 
-	const removeNullKey = [
-		'bin',
-		'author',
-		'engines',
-		'bugs',
-		'github',
-		'peerDependencies',
-		'optionalDependencies',
-		'xo'
-	]
+	const keys = Object.keys(packageData).filter(key => dataKeys.includes(key) && !booleanKeys.includes(key))
 
-	const ignoreKey = [
-		'preferGlobal',
-		'private'
-	]
-
-	const ignoreSubKey = [
-		'xo'
-	]
-
-	const keysData = Object.keys(data).filter(key => !ignoreKey.includes(key))
-	const keys = Object.keys(packageData).filter(key => keysData.includes(key))
-
-	keys.map((key) => {
+	keys.map(key => {
 		if (!packageData[key]) {
 			delete packageData[key]
 		} else if (typeof packageData[key] == 'object') {
@@ -214,14 +232,15 @@ const clean = (packageData) => {
 					delete packageData[key]
 				}
 			} else {
-				Object.keys(packageData[key]).map((k) => {
-					if (!ignoreSubKey.includes(key) && !packageData[key][k]) {
+				Object.keys(packageData[key]).map(k => {
+					if (!allSubKeys.includes(key) && !packageData[key][k]) {
 						delete packageData[key][k]
 					}
 				})
 			}
 		}
-		if (removeNullKey.includes(key)) {
+
+		if (objectKeys.includes(key)) {
 			if (Object.keys(packageData[key]).length <= 0) {
 				delete packageData[key]
 			}
@@ -232,35 +251,38 @@ const clean = (packageData) => {
 	if (argv.indent) {
 		indent = argv.indent
 	} else if (argv.space) {
-		indent = '\s\s'
+		indent = '  '
 	}
 
 	packageData = sortPackage(packageData)
 	packageData = JSON.stringify(packageData, null, indent)
+
 	return packageData
 }
 
-const main = async () => {
-	let packageFile = path.resolve(`${process.cwd()}/package.json`)
+const loadPackage = async () => {
+	packageData = dataMerge({}, cloneDeep(data))
+	packageFile = path.resolve(`${process.cwd()}/package.json`)
 	let packageGlobalFile = path.join(process.env.HOME || process.env.USERPROFILE, '.gen-package.json')
 	if (argv.dev) {
 		packageFile = path.resolve(`${process.cwd()}/dev/package.json`)
 		packageGlobalFile = path.resolve(`${process.cwd()}/dev/global.json`)
 	}
 
-	let packageData = {}
-	if (fs.existsSync(packageFile)) {
-		packageData = JSON.parse(fs.readFileSync(packageFile).toString())
-		packageData = toFalseValues(packageData)
-	}
 	if (fs.existsSync(packageGlobalFile)) {
-		const globalData = JSON.parse(fs.readFileSync(packageGlobalFile).toString())
-		packageData = _.merge(
-			globalData,
-			packageData
+		const globalDataJson = JSON.parse(fs.readFileSync(packageGlobalFile).toString())
+		packageData = dataMerge(
+			packageData,
+			globalDataJson
 		)
-		packageData.keywords = _.union(packageData.keywords, globalData.keywords)
-		packageData = toFalseValues(packageData)
+	}
+
+	if (fs.existsSync(packageFile)) {
+		const packageDataJson = JSON.parse(fs.readFileSync(packageFile).toString())
+		packageData = dataMerge(
+			packageData,
+			packageDataJson
+		)
 	}
 
 	if (!argv.offline) {
@@ -274,97 +296,78 @@ const main = async () => {
 				}
 			}
 		}
+
 		if (packageData.github) {
 			if (!github) {
 				github = gh(`${packageData.github.owner}/${packageData.github.name}`)
 			}
+
 			if (github) {
 				const githubDataJson = await githubData(github.api_url)
 				if (githubDataJson) {
-					packageData = _.merge({
+					packageData = dataMerge(packageData, {
 						description: githubDataJson.description,
 						repository: {
-							url: githubDataJson.clone_url
-						}
-					}, packageData)
-					packageData.keywords = _.union(packageData.keywords, githubDataJson.topics)
-					packageData = toFalseValues(packageData)
+							url: 'git+' + githubDataJson.clone_url
+						},
+						keywords: githubDataJson.topics || []
+					})
 				}
 			}
 		}
 	}
-	packageData = sortPackage(packageData)
 
-	const files = fs.readdirSync(process.cwd())
-	const license = () => {
-		if (packageData.license) {
-			return {
-				type: 'input',
-				name: 'license',
-				message: 'License:',
-				initial: packageData.license || data.license
-			}
-		} else {
-			return {
-				type: 'autocomplete',
-				name: 'license',
-				message: 'License:',
-				limit: 4,
-				suggest(input, choices) {
-					return choices.filter(choice => choice.message.startsWith(input))
-				},
-				choices: Object.keys(licenses.license)
-			}
-		}
-	}
+	return packageData
+}
 
-	if (!packageData.author) {
-		packageData.author = {}
+const licensePrompt = () => {
+	if (packageData.license) {
+		return [{
+			type: 'input',
+			name: 'license',
+			message: 'License:',
+			initial: packageData.license
+		}]
+	} else {
+		return [{
+			type: 'autocomplete',
+			name: 'license',
+			message: 'License:',
+			limit: 4,
+			suggest(input, choices) {
+				return choices.filter(choice => choice.message.startsWith(input))
+			},
+			choices: Object.keys(licenses.license)
+		}]
 	}
-	if (!packageData.repository) {
-		packageData.repository = {
-			type: 'git'
-		}
-	}
-	if (!packageData.bugs) {
-		packageData.bugs = {}
-	}
-	if (!packageData.engines) {
-		packageData.engines = {}
-	}
-	if (!packageData.bin) {
-		packageData.bin = {}
-	}
-	if (!packageData.dependencies) {
-		packageData.dependencies = {}
-	}
-	if (!packageData.devDependencies) {
-		packageData.devDependencies = {}
-	}
-	if (!packageData.preferGlobal) {
-		packageData.preferGlobal = false
-	}
+}
 
-	let response = await prompt([{
+const basicPrompt = () => {
+	return [{
 		type: 'input',
 		name: 'name',
 		message: 'Name',
-		initial: packageData.name || data.name
+		initial: packageData.name
 	}, {
 		type: 'input',
 		name: 'main',
 		message: 'Entry point:',
-		initial: packageData.main || data.main
+		initial: packageData.main
 	}, {
 		type: 'input',
 		name: 'version',
 		message: 'Version:',
-		initial: packageData.version || data.version
+		initial: packageData.version
 	}, {
 		type: 'input',
 		name: 'description',
 		message: 'Description:',
-		initial: packageData.description || data.description
+		initial: packageData.description
+	}, {
+		type: 'list',
+		name: 'keywords',
+		message: 'Keywords:',
+		initial: packageData.keywords || data.keywords
 	}, {
 		type: 'form',
 		name: 'author',
@@ -372,142 +375,149 @@ const main = async () => {
 		choices: [{
 			name: 'name',
 			message: 'Name',
-			initial: packageData.author.name || (typeof packageData.author == 'string' ? packageData.author : false) || data.author
+			initial: packageData.author.name
 		}, {
 			name: 'email',
 			message: 'Email',
-			initial: packageData.author.email || (typeof packageData.author == 'string' ? packageData.author : false) || data.author
+			initial: packageData.author.email
 		}, {
 			name: 'url',
 			message: 'url',
-			initial: packageData.author.url || (typeof packageData.author == 'string' ?  packageData.author : false) || data.author
+			initial: packageData.author.url
 		}]
-	}, {
-		...license(),
-	}, {
-		type: 'list',
-		name: 'keywords',
-		message: 'Keywords:',
-		initial: packageData.keywords || data.keywords
-	}, {
+	}]
+}
+
+const privatePromt = () => {
+	return [{
 		type: 'confirm',
 		name: 'private',
 		message: 'Private:',
-		initial: Boolean(packageData.private) || Boolean(data.private)
-	}, {
-		type: 'confirm',
+		initial: Boolean(packageData.private)
+	}]
+}
+
+const githubPrompt = () => {
+	return [{
+		type: 'form',
 		name: 'github',
-		message: 'GitHub Repository:',
-		initial: (typeof packageData.github == 'object' ? true : false) || (packageData.private && packageData.private == true ? false : true) || false
-	}])
-	response = toFalseValues(response)
-
-	if (response.github) {
-		if (!packageData.github) {
-			packageData.github = {}
-		}
-		response.github = await prompt({
-			type: 'form',
-			name: 'github',
-			message: 'GitHub Repository Info:',
-			choices: [{
-				name: 'name',
-				message: 'Repository Name:',
-				initial: packageData.github.name || response.github.name || ''
-			}, {
-				name: 'owner',
-				message: 'Owner/Username:',
-				initial: packageData.github.owner || response.github.owner || data.author.name || ''
-			}]
-		})
-		response.github = response.github.github
-
-		data.repository.url = `git+https://github.com/${response.github.owner}/${response.github.name}.git`
-		data.homepage = `https://${response.github.owner}.github.io/${response.github.name}`
-		data.bugs.url = `https://github.com/${response.github.owner}/${response.github.name}/issues`
-	}
-
-	let more = async () => {
-		return await prompt([{
-			type: 'input',
-			name: 'repository',
-			message: 'Repository GIT:',
-			initial: (typeof packageData.repository == 'string' ? `git+${packageData.repository}` : false) || packageData.repository.url || data.repository.url
+		message: 'GitHub Repository Info:',
+		choices: [{
+			name: 'name',
+			message: 'Repository Name:',
+			initial: packageData.github.name
 		}, {
-			type: 'input',
-			name: 'homepage',
-			message: 'Homepage URL:',
-			initial: packageData.homepage || data.homepage
-		}, {
-			type: 'input',
-			name: 'bugs',
-			message: 'Bugs/Issues/Suport URL:',
-			initial: (typeof packageData.bugs == 'string' ? packageData.bugs : false) || packageData.bugs.url || data.bugs.url
-		}, {
-			type: 'multiselect',
-			name: 'files',
-			message: 'Files to upload:',
-			initial: (packageData.files || [
-				'package.json',
-				'README.md',
-				'README',
-				'readme',
-				'LICENSE.md',
-				'LICENSE',
-				'license',
-				'index.js',
-				'dist',
-				'lib',
-				response.main
-			]).reduce((total, current, index) => {
-				if (files.includes(current)) {
-					total.push(current)
-				}
-				return total
-			}, []),
-			choices: [
-				...files.map((e) => {
-					return {name: e, value: e}
-				})
-			]
-		}])
-	}
-	more = toFalseValues(more)
+			name: 'owner',
+			message: 'Owner/Username:',
+			initial: packageData.github.owner
+		}]
+	}]
+}
 
-	let moreData = await more()
-	moreData.repository = {
-		type: 'git',
-		url: moreData.repository
-	}
-	moreData.bugs = {
-		url: moreData.bugs
-	}
-	moreData = toFalseValues(moreData)
+const urlsAndFilesPrompt = () => {
+	const files = fs.readdirSync(process.cwd())
+	return [{
+		type: 'input',
+		name: 'repository',
+		message: 'Repository GIT:',
+		initial: packageData.repository.url || data.repository.url
+	}, {
+		type: 'input',
+		name: 'homepage',
+		message: 'Homepage URL:',
+		initial: packageData.homepage || data.homepage
+	}, {
+		type: 'input',
+		name: 'bugs',
+		message: 'Bugs/Issues/Suport URL:',
+		initial: packageData.bugs.url || data.bugs.url
+	}, {
+		type: 'multiselect',
+		name: 'files',
+		message: 'Files to upload:',
+		initial: ((packageData.files.length > 0 && packageData.files) || [
+			'package.json',
+			'README.md',
+			'README',
+			'readme',
+			'LICENSE.md',
+			'LICENSE',
+			'license',
+			'index.js',
+			'dist',
+			'lib',
+			packageData.main
+		]).reduce((total, current) => {
+			if (files.includes(current)) {
+				total.push(current)
+			}
 
-	const isNode = await prompt({
+			return total
+		}, []),
+		choices: [
+			...files.map(e => {
+				return {name: e, value: e}
+			})
+		]
+	}]
+}
+
+const isPrompt = (msg, check) => {
+	return prompt({
 		type: 'confirm',
 		name: 'ok',
-		message: 'NodeJS Package?',
-		initial: Boolean(packageData.engines.node) || false
+		message: msg,
+		initial: Boolean(check)
 	})
-	if (isNode.ok) {
+}
+
+const main = async () => {
+	await loadPackage()
+	const responseBasic = await prompt([
+		...basicPrompt(),
+		...licensePrompt(),
+		...privatePromt(),
+		...githubPrompt()
+	])
+
+	packageData = dataMerge(
+		packageData,
+		responseBasic
+	)
+
+	if (responseBasic.github.name) {
+		data.repository.url = `git+https://github.com/${responseBasic.github.owner}/${responseBasic.github.name}.git`
+		data.homepage = `https://${responseBasic.github.owner}.github.io/${responseBasic.github.name}`
+		data.bugs.url = `https://github.com/${responseBasic.github.owner}/${responseBasic.github.name}/issues`
+	}
+
+	const responseurlsAndFiles = await prompt(urlsAndFilesPrompt())
+
+	packageData = dataMerge(
+		packageData,
+		{
+			files: responseurlsAndFiles.files,
+			homepage: responseurlsAndFiles.homepage,
+			repository: {
+				url: responseurlsAndFiles.repository,
+			},
+			bugs: {
+				url: responseurlsAndFiles.bugs
+			}
+		}
+	)
+
+	if (await isPrompt('NodeJS Package?', packageData.engines.node)) {
 		const engines = await prompt({
 			type: 'input',
 			name: 'node',
-			message: 'Version:',
+			message: 'Node Version:',
 			initial: packageData.engines.node || process.version.replace('v', '>=') || '>=8'
 		})
-		moreData.engines = engines
+		packageData.engines.node = engines.node
 	}
-	moreData = toFalseValues(moreData)
 
-	const isCli = await prompt({
-		type: 'confirm',
-		name: 'ok',
-		message: 'CLI Package?',
-		initial: JSON.stringify(packageData.bin) != '{}' || false
-	})
-	if (isCli.ok) {
+	if (await isPrompt('CLI Package?', (JSON.stringify(packageData.bin) != '{}' || false))) {
 		let fistCli = Object.keys(packageData.bin)
 		if (fistCli.length > 0) {
 			fistCli = {
@@ -520,7 +530,8 @@ const main = async () => {
 				point: packageData.main || data.main
 			}
 		}
-		let cli = await prompt({
+
+		const cli = await prompt({
 			type: 'form',
 			name: 'data',
 			message: 'CLI:',
@@ -534,48 +545,27 @@ const main = async () => {
 				initial: fistCli.point
 			}]
 		})
-		moreData.bin = {}
-		cli = {
-			[cli.data.name]: cli.data.point
-		}
 
-		moreData.bin = _.merge(
-			moreData.bin,
-			cli
+		packageData.bin = merge(
+			packageData.bin,
+			{
+				[cli.data.name]: cli.data.point
+			}
 		)
 	}
-	moreData = toFalseValues(moreData)
 
-	const isGlobal = await prompt({
-		type: 'confirm',
-		name: 'ok',
-		message: 'Global Package?',
-		initial: Boolean(packageData.preferGlobal)
-	})
-	if (isGlobal.ok) {
-		moreData.preferGlobal = true
+	if (await isPrompt('Global Package?', packageData.preferGlobal)) {
+		packageData.preferGlobal = true
 	}
-	moreData = toFalseValues(moreData)
 
-	const packageJson = clean({
-		...data,
-		...packageData,
-		...response,
-		...moreData
-	})
+	const packageJson = clean()
 	console.log(packageJson)
-	const is = await prompt([{
-		type: 'confirm',
-		name: 'ok',
-		message: 'Is this OK?',
-		initial: true
-	}])
-	if (is.ok) {
+	if (await isPrompt('Is this OK?', true)) {
 		fs.writeFileSync(packageFile, packageJson)
 	}
 }
 
-main().catch((error) => {
+main().catch(error => {
 	if (error != '') {
 		console.log('Error:', error)
 	}
