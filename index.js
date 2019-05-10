@@ -499,7 +499,7 @@ const main = async () => {
 			files: responseurlsAndFiles.files,
 			homepage: responseurlsAndFiles.homepage,
 			repository: {
-				url: responseurlsAndFiles.repository,
+				url: responseurlsAndFiles.repository
 			},
 			bugs: {
 				url: responseurlsAndFiles.bugs

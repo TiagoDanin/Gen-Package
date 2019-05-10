@@ -1,6 +1,6 @@
 # Gen Package
 
-[![Node](https://img.shields.io/node/v/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package)[![Version](https://img.shields.io/npm/v/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package)[![Downloads](https://img.shields.io/npm/dt/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package)
+[![Node](https://img.shields.io/node/v/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package) [![Version](https://img.shields.io/npm/v/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package) [![Downloads](https://img.shields.io/npm/dt/gen-package.svg?style=flat-square)](https://npmjs.org/package/gen-package) [![Travis](https://img.shields.io/travis/TiagoDanin/Gen-Package.svg?branch=master&style=flat-square)](https://travis-ci.org/TiagoDanin/Gen-Package) 
 
 Intuitive and user-friendly generator of package.json
 
@@ -34,6 +34,17 @@ gen-package --offline
 gen-package --github=TiagoDanin/Gen-Package
 ```
 
+## Tests
+
+To run the test suite, first install the dependencies, then run `test`:
+
+```sh
+# NPM
+npm test
+# Or Using Yarn
+yarn test
+```
+
 ## Dependencies
 
 - [choosealicense-list](https://ghub.io/choosealicense-list): List of licenses from choosealicense.com
@@ -43,6 +54,10 @@ gen-package --github=TiagoDanin/Gen-Package
 - [is-online](https://ghub.io/is-online): Check if the internet connection is up
 - [lodash](https://ghub.io/lodash): Lodash modular utilities.
 - [minimist](https://ghub.io/minimist): parse argument options
+
+## Dev Dependencies
+
+- [xo](https://ghub.io/xo): JavaScript happiness style linter ❤️
 
 ## Contributors
 
