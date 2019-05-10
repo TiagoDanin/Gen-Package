@@ -55,5 +55,10 @@
 		"lodash": "4.17.11",
 		"minimist": "1.2.0"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"xo": "^0.24.0"
+	},
+	"xo": {
+		"semicolon": false
+	}
 }

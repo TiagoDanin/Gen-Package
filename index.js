@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs')
-const _ = require('lodash')
 const path = require('path')
+const _ = require('lodash')
 const got = require('got')
 const gh = require('github-url-to-object')
 const isOnline = require('is-online')
@@ -32,7 +32,8 @@ let data = {
 	dependencies: {},
 	devDependencies: {},
 	peerDependencies: {},
-	optionalDependencies: {}
+	optionalDependencies: {},
+	xo: {}
 }
 
 const githubData = async (url) => {
@@ -67,7 +68,7 @@ const toFalse = (input) => {
 		'https://github.com///issues',
 		' '
 	]
-	if (typeof input == 'number' && input <= 0) {
+	if (typeof input == 'number' && input < 0) {
 		return false
 	} else if (typeof input == 'string') {
 		if (input.length <= 0 || stringEmpty.includes(input)) {
@@ -140,7 +141,8 @@ const sortPackage = (packageData) => {
 		'dependencies',
 		'devDependencies',
 		'peerDependencies',
-		'optionalDependencies'
+		'optionalDependencies',
+		'xo'
 	]
 
 	const top = [
@@ -179,22 +181,27 @@ const clean = (packageData) => {
 		delete packageData.repository
 	}
 
-	const removeList = [
+	const removeNullKey = [
 		'bin',
 		'author',
 		'engines',
 		'bugs',
 		'github',
 		'peerDependencies',
-		'optionalDependencies'
+		'optionalDependencies',
+		'xo'
 	]
 
-	const ignoreList = [
+	const ignoreKey = [
 		'preferGlobal',
 		'private'
 	]
 
-	const keysData = Object.keys(data).filter(key => !ignoreList.includes(key))
+	const ignoreSubKey = [
+		'xo'
+	]
+
+	const keysData = Object.keys(data).filter(key => !ignoreKey.includes(key))
 	const keys = Object.keys(packageData).filter(key => keysData.includes(key))
 
 	keys.map((key) => {
@@ -208,13 +215,13 @@ const clean = (packageData) => {
 				}
 			} else {
 				Object.keys(packageData[key]).map((k) => {
-					if (!packageData[key][k]) {
+					if (!ignoreSubKey.includes(key) && !packageData[key][k]) {
 						delete packageData[key][k]
 					}
 				})
 			}
 		}
-		if (removeList.includes(key)) {
+		if (removeNullKey.includes(key)) {
 			if (Object.keys(packageData[key]).length <= 0) {
 				delete packageData[key]
 			}
@@ -567,4 +574,9 @@ const main = async () => {
 		fs.writeFileSync(packageFile, packageJson)
 	}
 }
-main()
+
+main().catch((error) => {
+	if (error != '') {
+		console.log('Error:', error)
+	}
+})
