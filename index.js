@@ -462,13 +462,15 @@ const urlsAndFilesPrompt = () => {
 	}]
 }
 
-const isPrompt = (msg, check) => {
-	return prompt({
+const isPrompt = async (msg, check) => {
+	const is = await prompt({
 		type: 'confirm',
 		name: 'ok',
 		message: msg,
 		initial: Boolean(check)
 	})
+
+	return is.ok
 }
 
 const main = async () => {
