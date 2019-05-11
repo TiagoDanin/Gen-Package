@@ -47,16 +47,16 @@
 		"package.json"
 	],
 	"dependencies": {
-		"choosealicense-list": "1.1.1",
-		"enquirer": "2.3.0",
+		"choosealicense-list": "^1.1.1",
+		"enquirer": "^2.3.0",
 		"github-url-to-object": "4.0.4",
-		"got": "9.6.0",
-		"is-online": "8.2.0",
-		"lodash": "4.17.11",
-		"minimist": "1.2.0"
+		"got": "^9.6.0",
+		"is-online": "^8.2.0",
+		"lodash": "^4.17.11",
+		"minimist": "^1.2.0"
 	},
 	"devDependencies": {
-		"xo": "0.24.0"
+		"xo": "^0.24.0"
 	},
 	"xo": {
 		"rules": {
