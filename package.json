@@ -5,7 +5,7 @@
 		"gen-package": "index.js"
 	},
 	"preferGlobal": true,
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"description": "Intuitive and user-friendly generator of package.json",
 	"author": {
 		"email": "TiagoDanin@outlook.com",
