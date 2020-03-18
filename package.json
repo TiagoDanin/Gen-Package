@@ -53,7 +53,7 @@
 		"got": "^9.6.0",
 		"is-online": "^8.2.1",
 		"lodash": "^4.17.14",
-		"minimist": "^1.2.2"
+		"minimist": "^1.2.5"
 	},
 	"devDependencies": {
 		"xo": "^0.28.0"
