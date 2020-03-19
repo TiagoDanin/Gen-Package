@@ -52,7 +52,7 @@
 		"github-url-to-object": "4.0.4",
 		"got": "^9.6.0",
 		"is-online": "^8.2.1",
-		"lodash": "^4.17.14",
+		"lodash": "^4.17.15",
 		"minimist": "^1.2.5"
 	},
 	"devDependencies": {
