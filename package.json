@@ -56,7 +56,7 @@
 		"minimist": "^1.2.5"
 	},
 	"devDependencies": {
-		"xo": "^0.28.1"
+		"xo": "^0.28.2"
 	},
 	"xo": {
 		"rules": {
