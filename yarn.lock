@@ -2261,10 +2261,10 @@ is-obj@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-obj/-/is-obj-2.0.0.tgz#473fb05d973705e3fd9620545018ca8e22ef4982"
   integrity sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==
 
-is-online@^8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/is-online/-/is-online-8.3.0.tgz#1bbee0c409db885e58e83f1b033505e272d3dc5c"
-  integrity sha512-Md+/1ZC4vo+bBSI/96MuFJtzbcQltYMnfbH3MJ+Nbav9hE3H5tw1yGUdnMV6z2D1kbkMDBmV/CYnKPdr3r+unQ==
+is-online@^8.3.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/is-online/-/is-online-8.3.1.tgz#e9f6e8daecd2e57a803473df0bc2eaea1cc2a987"
+  integrity sha512-SOyioWVyX4xp6EpQT1P7PCiTC1YZmqShZqVSFmq1gEVuIuc+lzTzVMZSYiyR6Chna+U7EKqwtlBBk8nnmPHCsQ==
   dependencies:
     got "^9.6.0"
     p-any "^2.0.0"
