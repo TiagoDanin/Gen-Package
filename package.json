@@ -51,7 +51,7 @@
 		"enquirer": "^2.3.5",
 		"github-url-to-object": "4.0.4",
 		"got": "^11.0.3",
-		"is-online": "^8.3.1",
+		"is-online": "^8.4.0",
 		"lodash": "^4.17.15",
 		"minimist": "^1.2.5"
 	},
