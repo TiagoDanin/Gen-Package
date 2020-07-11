@@ -50,7 +50,7 @@
 		"choosealicense-list": "^1.1.1",
 		"enquirer": "^2.3.5",
 		"github-url-to-object": "4.0.4",
-		"got": "^11.0.3",
+		"got": "^11.5.0",
 		"is-online": "^8.4.0",
 		"lodash": "^4.17.19",
 		"minimist": "^1.2.5"
