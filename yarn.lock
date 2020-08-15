@@ -762,10 +762,10 @@ chalk@^4.0.0, chalk@^4.1.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-choosealicense-list@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/choosealicense-list/-/choosealicense-list-1.1.1.tgz#6bb2e1af21a48ffe3c613dbad5a9161364ad69c4"
-  integrity sha512-9MlmERjGCs2ewxbYBh66KZzJU9o/CTm/Z1w2QDTRtdno0yM3odWlIj3CgPJ/KocAH4Bg5TkaiAUWcPE3ZLMBwA==
+choosealicense-list@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/choosealicense-list/-/choosealicense-list-1.2.0.tgz#8f617b28bc3623dfc2e6b4863d6e770ba932a5e6"
+  integrity sha512-Dhg8yb5DWCtTL+jZpCbj+swtqfeQb8fRMNGKTvYqTgM2CfXdLYqyklEivJK4RiCCjMF5Y3/xs0AA/+tVbbfzaA==
 
 ci-info@^2.0.0:
   version "2.0.0"
@@ -1202,7 +1202,7 @@ enhanced-resolve@^0.9.1:
     memory-fs "^0.2.0"
     tapable "^0.1.8"
 
-enquirer@^2.3.6:
+enquirer@^2.3.5, enquirer@^2.3.6:
   version "2.3.6"
   resolved "https://registry.yarnpkg.com/enquirer/-/enquirer-2.3.6.tgz#2a7fe5dd634a1e4125a975ec994ff5456dc3734d"
   integrity sha512-yjNnPr315/FjS4zIsUxYguYUPP2e1NK4d7E7ZOLiyYCcbFBiTMyID+2wvm2w6+pZ/odMA7cRkjhsPbltwBOrLg==
