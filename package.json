@@ -48,7 +48,7 @@
 	],
 	"dependencies": {
 		"choosealicense-list": "^1.2.0",
-		"enquirer": "^2.3.6",
+		"enquirer": "^2.4.1",
 		"github-url-to-object": "4.0.4",
 		"got": "^11.8.2",
 		"is-online": "^8.4.0",
